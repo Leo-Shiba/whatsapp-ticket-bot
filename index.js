@@ -30,6 +30,10 @@ const menu = require("./core/menu");
 const tickets = require("./core/ticketManager");
 const { extrairTexto } = require("./core/utils");
 
+// Se PHONE estiver definido no .env, usa pairing code (ideal para host/cloud).
+// Caso contrário, exibe QR no terminal (para teste local).
+const MODO_PAIRING = !!process.env.PHONE;
+
 async function salvarQR(qrData) {
   qrTerminal.generate(qrData, { small: true });
   console.log("[QR] Escaneie o código acima no WhatsApp → Aparelhos conectados → Conectar aparelho");
@@ -37,6 +41,26 @@ async function salvarQR(qrData) {
     const png = await QRCode.toBuffer(qrData, { type: "png", width: 512, margin: 2 });
     fs.writeFileSync("./data/qrcode.png", png);
   } catch (e) { console.error("[QR]", e.message); }
+}
+
+async function solicitarPairingCode(sock) {
+  // Aguarda um ciclo para o socket estar pronto antes de pedir o código
+  await new Promise(r => setTimeout(r, 3000));
+  const numero = process.env.PHONE.replace(/\D/g, '');
+  try {
+    const code = await sock.requestPairingCode(numero);
+    console.log('');
+    console.log('╔══════════════════════════════════════╗');
+    console.log('║        PAIRING CODE — TICKET BOT     ║');
+    console.log(`║            👉  ${code}  👈             ║`);
+    console.log('╠══════════════════════════════════════╣');
+    console.log('║  WhatsApp → Aparelhos conectados     ║');
+    console.log('║  → Conectar com número de telefone   ║');
+    console.log('╚══════════════════════════════════════╝');
+    console.log('');
+  } catch (e) {
+    console.error('[pairing] Erro ao solicitar código:', e.message);
+  }
 }
 
 let _dbIniciado = false;
@@ -79,11 +103,16 @@ async function iniciar() {
       markOnlineOnConnect: false,
     });
 
+    // Pairing code: solicita somente se ainda não está registrado
+    if (MODO_PAIRING && !state.creds.registered) {
+      solicitarPairingCode(sock);
+    }
+
     sock.ev.on("creds.update", saveCreds);
 
     sock.ev.on("connection.update", async (update) => {
       const { connection, lastDisconnect, qr } = update;
-      if (qr) await salvarQR(qr);
+      if (qr && !MODO_PAIRING) await salvarQR(qr);
 
       if (connection === "open") {
         _iniciando = false;
