@@ -8,9 +8,10 @@ module.exports = {
   async executar({ sock, jid, comandos }) {
     let texto = '🤖 *TICKET BOT — Comandos:*\n\n';
     for (const cmd of comandos()) {
-      texto += `*${config.prefixo}${cmd.nome}*${cmd.apenasAdmin ? ' 👑' : ''}\n_${cmd.descricao}_\n\n`;
+      const tag = cmd.apenasDono ? ' 👑' : (cmd.apenasAdmin ? ' 🛡️' : '');
+      texto += `*${config.prefixo}${cmd.nome}*${tag}\n_${cmd.descricao}_\n\n`;
     }
-    texto += '👑 = apenas admins do grupo';
+    texto += '👑 = apenas o dono do bot · 🛡️ = admins do grupo';
     await sock.sendMessage(jid, { text: texto });
   },
 };

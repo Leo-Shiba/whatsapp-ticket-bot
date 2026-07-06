@@ -4,7 +4,8 @@ const CAMPOS = { titulo: 'painel_titulo', descricao: 'painel_descricao', rodape:
 module.exports = {
   nome: 'setpainel',
   descricao: 'Edita o painel: !setpainel titulo <texto> | descricao <texto> | rodape <texto>',
-  apenasAdmin: true,
+  apenasDono: true,
+  apenasPV: true,
   async executar({ sock, jid, args, textoArgs, db }) {
     const campo = args[0]?.toLowerCase();
     const valor = textoArgs.replace(/^\S+\s*/, '').trim();

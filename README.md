@@ -160,7 +160,20 @@ WhatsApp → Configurações → Aparelhos conectados → Conectar aparelho
 
 ## ⚙️ Configuração inicial
 
-No **grupo de vendas**, como admin, monte o painel uma única vez:
+![PASSO A](https://img.shields.io/badge/1-Registrar%20o%20dono-FF6B00?style=flat-square)
+
+No primeiro boot, o bot imprime um **código de vínculo** nos logs. Envie no **privado do bot**:
+
+```bash
+!dono <código>
+```
+
+Pronto — você é o dono. O código é queimado após o uso e **só o dono pode configurar o bot**
+(o sistema reconhece você tanto pelo número quanto pelo LID, automaticamente).
+
+![PASSO B](https://img.shields.io/badge/2-Configurar%20no%20privado-CC4500?style=flat-square)
+
+Ainda no **privado do bot**, monte o painel:
 
 ```bash
 !addopcao Suporte | Problemas com pedidos
@@ -168,12 +181,15 @@ No **grupo de vendas**, como admin, monte o painel uma única vez:
 !addopcao Parcerias | Proposta de parceria
 !setpainel titulo 🎫 CENTRAL DE ATENDIMENTO
 !setpainel descricao Escolha uma opção abaixo para falar com a equipe:
-!staff add @atendente1
-!staff add @atendente2
-!painel
+!staff add 5511999999999
+!staff add 5511888888888
 ```
 
-Para definir a **imagem do painel**: responda a uma imagem com `!setimagem`.
+Para definir a **imagem do painel**: envie/responda uma imagem com `!setimagem` (no privado).
+
+![PASSO C](https://img.shields.io/badge/3-Enviar%20o%20painel-FF6B00?style=flat-square)
+
+No **grupo de vendas**, envie `!painel` — isso registra o grupo como o único onde tickets abrem.
 
 > [!IMPORTANT]
 > **Pool de grupos (recomendado):** crie os grupos de ticket manualmente
@@ -186,37 +202,39 @@ Para definir a **imagem do painel**: responda a uma imagem com `!setimagem`.
 ## 🎛️ Comandos
 
 > Todos os comandos usam o prefixo `!`.
+> 👑 = só o **dono** registrado · 🔒 = só no **privado** do bot · 🛡️ = admins do grupo
 
-### 🔐 Painel e Menu (admins)
+### 🔐 Configuração 👑🔒 (dono, no privado)
 
 <div align="center">
 
 | Comando | Descrição |
 |:--|:--|
-| `!painel` | Envia o painel neste grupo (define o grupo de vendas) |
+| `!dono <código>` | Registra o dono (código aparece nos logs do bot) |
 | `!setpainel titulo <texto>` | Edita o título do painel |
 | `!setpainel descricao <texto>` | Edita a descrição do painel |
 | `!setpainel rodape <texto>` | Edita o rodapé do painel |
-| `!setimagem` | Define a imagem do painel (respondendo a uma imagem) |
+| `!setimagem` | Define a imagem do painel (enviando/respondendo uma imagem) |
 | `!addopcao Nome \| Descrição` | Adiciona opção ao menu |
 | `!delopcao <nº>` | Remove opção do menu |
 | `!opcoes` | Lista as opções configuradas |
+| `!staff add <número>` | Cadastra atendente (com DDI: 5511999999999) |
+| `!staff remover <número>` | Remove atendente |
+| `!tickets` | Lista os tickets abertos |
 
 </div>
 
-### 🎫 Tickets e Equipe (admins)
+### 🎫 Tickets e Pool
 
 <div align="center">
 
-| Comando | Alias | Descrição |
-|:--|:--|:--|
-| `!fechar` | `!close` | Fecha o ticket do grupo atual e o devolve ao pool |
-| `!tickets` | — | Lista os tickets abertos |
-| `!staff add @pessoa` | — | Cadastra atendente |
-| `!staff remover @pessoa` | — | Remove atendente |
-| `!pool` | — | Lista os grupos do pool e o status 🟢/🔴 |
-| `!pool add` | — | Registra o grupo atual no pool |
-| `!pool remover` | — | Tira o grupo atual do pool |
+| Comando | Quem | Onde | Descrição |
+|:--|:--:|:--|:--|
+| `!painel` | 👑 | Grupo de vendas | Envia o painel e registra o grupo |
+| `!pool add` | 👑 | Grupo de ticket | Registra o grupo atual no pool |
+| `!pool remover` | 👑 | Grupo de ticket | Tira o grupo atual do pool |
+| `!pool` | 👑 | Qualquer lugar | Lista os grupos do pool e o status 🟢/🔴 |
+| `!fechar` | 🛡️ | Grupo do ticket | Fecha o ticket e devolve o grupo ao pool |
 
 </div>
 

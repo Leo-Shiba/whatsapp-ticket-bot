@@ -28,7 +28,9 @@ process.on("SIGTERM", () => process.exit(0));
 process.on("SIGINT", () => process.exit(0));
 
 function iniciar() {
-  const bot = spawn("node", ["index.js"], { stdio: "inherit", cwd: __dirname });
+  // Carrega .env local se existir (na host as variáveis já vêm do painel)
+  const args = fs.existsSync(path.join(__dirname, ".env")) ? ["--env-file=.env", "index.js"] : ["index.js"];
+  const bot = spawn("node", args, { stdio: "inherit", cwd: __dirname });
   bot.on("close", (code) => {
     if (code === null || code === 0) return;
     console.log(`\n[launcher] Bot encerrado (codigo ${code}). Reiniciando em 3s...\n`);

@@ -36,6 +36,12 @@ async function abrirTicket({ sock, db, cliente, opcao }) {
     db.setOcupado(grupo.jid, 1);
     const ticketId = db.criarTicket(cliente, grupo.jid, opcao.nome);
     const numCliente = jidParaNumero(cliente);
+    const staff = db.listarStaff().map(s => s.jid);
+
+    // Grupo pronto do pool pode não ter os atendentes ainda — garante que estão lá
+    if (!grupo.criado && staff.length) {
+      await sock.groupParticipantsUpdate(grupo.jid, staff, 'add').catch(() => {});
+    }
 
     // Tenta adicionar o cliente direto; se a privacidade dele bloquear, manda o convite no PV
     let convite = null;
@@ -62,7 +68,6 @@ async function abrirTicket({ sock, db, cliente, opcao }) {
     await sock.sendMessage(cliente, { text: textoPV }).catch(() => {});
 
     // Mensagem de abertura no grupo do ticket
-    const staff = db.listarStaff().map(s => s.jid);
     await sock.sendMessage(grupo.jid, {
       text: `🎫 *TICKET #${ticketId} ABERTO*\n\n` +
             `📂 Categoria: *${opcao.nome}*\n` +
@@ -82,10 +87,19 @@ async function fecharTicket({ sock, db, jidGrupo }) {
   const ticket = db.getTicketAbertoPorGrupo(jidGrupo);
   if (!ticket) return { erro: 'sem_ticket' };
 
-  db.fecharTicket(ticket.id);
+  // Remove o cliente ANTES de liberar o grupo — se falhar (bot sem admin),
+  // o ticket continua aberto para o grupo não voltar ao pool com o cliente dentro
+  let removido = false;
+  try {
+    const res = await sock.groupParticipantsUpdate(jidGrupo, [ticket.jid_cliente], 'remove');
+    const status = String(res?.[0]?.status);
+    // 200 = removido; 404/409 = já não está no grupo — nos dois casos está fora
+    removido = ['200', '404', '409'].includes(status);
+  } catch {}
 
-  // Remove o cliente do grupo e devolve o grupo ao pool
-  await sock.groupParticipantsUpdate(jidGrupo, [ticket.jid_cliente], 'remove').catch(() => {});
+  if (!removido) return { erro: 'sem_admin', ticket };
+
+  db.fecharTicket(ticket.id);
   db.setOcupado(jidGrupo, 0);
 
   await sock.sendMessage(jidGrupo, {

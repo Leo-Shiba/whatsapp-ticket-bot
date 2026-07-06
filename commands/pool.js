@@ -2,9 +2,15 @@
 module.exports = {
   nome: 'pool',
   descricao: 'Gerencia o pool de grupos de ticket: !pool (lista) | !pool add (registra o grupo atual) | !pool remover',
-  apenasAdmin: true,
-  async executar({ sock, jid, args, db }) {
+  apenasDono: true,
+  permitirPV: true,
+  async executar({ sock, jid, isGroup, args, db }) {
     const acao = args[0]?.toLowerCase();
+
+    if ((acao === 'add' || acao === 'remover' || acao === 'del') && !isGroup) {
+      await sock.sendMessage(jid, { text: '⚙️ Use *!pool add* / *!pool remover* dentro do grupo de ticket que quer registrar.' });
+      return;
+    }
 
     if (acao === 'add') {
       const meta = await sock.groupMetadata(jid).catch(() => null);

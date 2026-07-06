@@ -28,7 +28,8 @@ const db = require("./core/database");
 const handler = require("./core/commandHandler");
 const menu = require("./core/menu");
 const tickets = require("./core/ticketManager");
-const { extrairTexto } = require("./core/utils");
+const dono = require("./core/dono");
+const { extrairTexto, remetenteCanonico } = require("./core/utils");
 
 // Se PHONE estiver definido no .env, usa pairing code (ideal para host/cloud).
 // Caso contrário, exibe QR no terminal (para teste local).
@@ -119,6 +120,22 @@ async function iniciar() {
         _falhas428 = 0;
         _falhas440 = 0;
         console.log("Conectado ao WhatsApp!");
+
+        // Enquanto não houver dono registrado, mostra o código de vínculo
+        if (!dono.temDono(db)) {
+          const codigo = dono.getOuCriarCodigo(db);
+          console.log('');
+          console.log('╔════════════════════════════════════════════╗');
+          console.log('║   🔑 BOT SEM DONO — CÓDIGO DE VÍNCULO      ║');
+          console.log(`║           👉  ${codigo}  👈                ║`);
+          console.log('╠════════════════════════════════════════════╣');
+          console.log('║  Envie no PRIVADO do bot:                  ║');
+          console.log(`║  !dono ${codigo}                           ║`);
+          console.log('║  Só a primeira pessoa com o código vira    ║');
+          console.log('║  dono. Configurações só funcionam pra ela. ║');
+          console.log('╚════════════════════════════════════════════╝');
+          console.log('');
+        }
       }
 
       if (connection === "close") {
@@ -168,7 +185,7 @@ async function iniciar() {
           const texto = extrairTexto(msg);
           const opcao = menu.extrairEscolha(msg, texto, db);
           if (opcao) {
-            const cliente = msg.key.participant || msg.key.remoteJid;
+            const cliente = remetenteCanonico(msg);
             const r = await tickets.abrirTicket({ sock, db, cliente, opcao });
 
             if (r.erro === 'ja_aberto') {

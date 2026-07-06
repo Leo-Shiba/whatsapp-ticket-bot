@@ -5,7 +5,8 @@ module.exports = {
   nome: 'opcoes',
   aliases: ['listaropcoes'],
   descricao: 'Lista as opções configuradas no painel',
-  apenasAdmin: true,
+  apenasDono: true,
+  apenasPV: true,
   async executar({ sock, jid, db }) {
     const opcoes = db.listarOpcoes();
     if (!opcoes.length) {

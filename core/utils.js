@@ -26,4 +26,16 @@ function extrairTexto(msg) {
 const EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
 function numeroEmoji(n) { return EMOJIS[n - 1] || `*${n}.*`; }
 
-module.exports = { extrairMencionado, jidParaNumero, formatarHora, reagir, extrairTexto, numeroEmoji };
+// Identidade canônica do remetente: prefere o número real (@s.whatsapp.net)
+// ao LID quando o Baileys fornece os dois — assim tickets, envios de PV e
+// deduplicação usam sempre a mesma identidade para a mesma pessoa.
+function remetenteCanonico(msg) {
+  const k = msg.key || {};
+  const ehGrupo = k.remoteJid?.endsWith('@g.us');
+  const jid = ehGrupo
+    ? (k.participantPn || k.participant)
+    : (k.senderPn || k.remoteJid);
+  return jid ? jid.replace(/:\d+(?=@)/, '') : jid;
+}
+
+module.exports = { extrairMencionado, jidParaNumero, formatarHora, reagir, extrairTexto, numeroEmoji, remetenteCanonico };

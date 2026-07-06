@@ -3,7 +3,8 @@ module.exports = {
   nome: 'delopcao',
   aliases: ['delmenu'],
   descricao: 'Remove uma opção do painel pelo número: !delopcao 2',
-  apenasAdmin: true,
+  apenasDono: true,
+  apenasPV: true,
   async executar({ sock, jid, args, db }) {
     const pos = parseInt(args[0], 10);
     if (!pos) {

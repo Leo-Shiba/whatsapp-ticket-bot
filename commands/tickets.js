@@ -4,7 +4,8 @@ const { jidParaNumero, formatarHora } = require('../core/utils');
 module.exports = {
   nome: 'tickets',
   descricao: 'Lista os tickets abertos',
-  apenasAdmin: true,
+  apenasDono: true,
+  apenasPV: true,
   async executar({ sock, jid, db }) {
     const abertos = db.listarTicketsAbertos();
     if (!abertos.length) {

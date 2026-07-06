@@ -10,6 +10,8 @@ module.exports = {
     const r = await tickets.fecharTicket({ sock, db, jidGrupo: jid });
     if (r.erro === 'sem_ticket') {
       await sock.sendMessage(jid, { text: '❌ Não há ticket aberto neste grupo.' });
+    } else if (r.erro === 'sem_admin') {
+      await sock.sendMessage(jid, { text: '⚠️ Não consegui remover o cliente — preciso ser *admin* deste grupo. Me promova e use !fechar de novo.' });
     }
   },
 };

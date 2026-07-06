@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('../config');
 const { reagir, extrairTexto } = require('./utils');
+const dono = require('./dono');
 
 const comandos = new Map();
 const _adminCache = new Map();
@@ -54,14 +55,29 @@ async function tratarComando({ sock, msg, db }) {
   const autor = msg.key.participant || msg.key.remoteJid;
   if (!cmd) return false;
 
-  if (!isGroup && !cmd.permitirPV) return true;
+  // Modelo de permissão:
+  // - apenasDono: só o dono registrado (!dono) pode usar, em qualquer lugar
+  // - apenasPV:   só funciona no privado do bot (combinado com apenasDono
+  //               para comandos de configuração)
+  // - apenasAdmin: admins do grupo onde o comando foi usado
+  const ehDono = dono.ehDono(msg, db);
 
-  let temPermissao = true;
-  if (cmd.apenasAdmin && isGroup) {
-    const admins = await getAdmins(sock, jid);
-    temPermissao = admins.includes(autor);
+  if (cmd.apenasDono && !ehDono) {
+    await reagir(sock, msg, '❌');
+    return true;
   }
-  if (!temPermissao) { await reagir(sock, msg, '❌'); return true; }
+
+  if (cmd.apenasPV && isGroup) {
+    await sock.sendMessage(jid, { text: '🔒 Este comando só funciona no meu *privado*.' }).catch(() => {});
+    return true;
+  }
+
+  if (!isGroup && !cmd.permitirPV && !cmd.apenasPV) return true;
+
+  if (cmd.apenasAdmin && isGroup && !ehDono) {
+    const admins = await getAdmins(sock, jid);
+    if (!admins.includes(autor)) { await reagir(sock, msg, '❌'); return true; }
+  }
 
   try {
     await cmd.executar({ sock, msg, jid, autor, isGroup, args, textoArgs, db, nomeCmd: nome, comandos: listar });

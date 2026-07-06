@@ -6,7 +6,8 @@ const { imagemPath } = require('../core/menu');
 module.exports = {
   nome: 'setimagem',
   descricao: 'Define a imagem do painel — responda a uma imagem com !setimagem',
-  apenasAdmin: true,
+  apenasDono: true,
+  apenasPV: true,
   async executar({ sock, msg, jid }) {
     const ctx = msg.message?.extendedTextMessage?.contextInfo;
     const quoted = ctx?.quotedMessage;

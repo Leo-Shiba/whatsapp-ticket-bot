@@ -3,7 +3,8 @@ module.exports = {
   nome: 'addopcao',
   aliases: ['addmenu'],
   descricao: 'Adiciona uma opção ao painel: !addopcao Nome | Descrição opcional',
-  apenasAdmin: true,
+  apenasDono: true,
+  apenasPV: true,
   async executar({ sock, jid, textoArgs, db }) {
     const [nome, descricao = ''] = textoArgs.split('|').map(s => s.trim());
     if (!nome) {
