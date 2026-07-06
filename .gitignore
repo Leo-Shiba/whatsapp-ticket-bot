@@ -1,0 +1,7 @@
+node_modules/
+data/auth/
+data/bot.db
+data/bot.pid
+data/qrcode.png
+data/painel.jpg
+.env
